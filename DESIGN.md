@@ -20,8 +20,8 @@ Next week's "has HubSpot's price changed since Monday?" gets Monday's claims han
 - **Dates are resolved in code.** Models are shaky at "what date was last Tuesday". A parser plus a few rules is exact and testable. Loose phrases keep both readings ("last Tuesday" on a Wednesday is yesterday or a week ago) and the stored chats settle it. An empty day is stated outright, so the agent says "nothing recorded" instead of inventing a chat.
 - **Three ways in.** By date, by topic (full-text search), and a 45-day timeline. If the user gets the day wrong, topic or timeline still finds it and the agent names the real date.
 - **The ledger runs after the answer.** It costs the user zero wait. If it fails, the raw chat is still there, so recall degrades instead of breaking.
-- **Search runs on the model provider's side.** The model sends several searches in one go and gets citations back with the text. One API key, no search client to maintain.
-- **Fast by default.** Streaming, low reasoning effort, no search for small talk or pure memory questions, and only the last 10 turns are replayed (older ones come back through recall).
+- **Search runs on the model provider's side.** Gemini's built-in Google Search: the model sends several queries in one go and citations come back tied to the exact sentence. One API key, no search client to maintain.
+- **Fast by default.** A Flash model for chat and Flash-Lite for the ledger, streaming, low thinking level, no search for small talk or pure memory questions, and only the last 10 turns are replayed (older ones come back through recall).
 - **The system prompt never changes.** Time and memory travel with the user message, so the prompt stays stable and easy to reason about.
 - **Boring storage.** One SQLite file, two tables. `npm install` is the whole setup.
 

@@ -3,13 +3,12 @@
 // re-check specific claims instead of re-reading old prose.
 // Runs after the user already has their answer, so it costs them no time.
 
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import type { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { LEDGER_SYSTEM } from "./prompt.ts";
 import { saveLedger, type Source } from "./store.ts";
 
-const MODEL = process.env.LEDGER_MODEL ?? "claude-haiku-5-5";
+const MODEL = process.env.LEDGER_MODEL ?? "gemini-3.5-flash-lite";
 
 const Ledger = z.object({
   topic: z.string(),
@@ -21,12 +20,13 @@ const Ledger = z.object({
     }),
   ),
 });
+const LEDGER_SCHEMA = z.toJSONSchema(Ledger);
 
 const pending = new Set<Promise<void>>();
 
 // fire and forget. if this fails we still have the raw chat, so nothing is lost.
-export function recordLedger(client: Anthropic, exchangeId: number, question: string, answer: string, sources: Source[]) {
-  const job = extract(client, exchangeId, question, answer, sources)
+export function recordLedger(ai: GoogleGenAI, exchangeId: number, question: string, answer: string, sources: Source[]) {
+  const job = extract(ai, exchangeId, question, answer, sources)
     .catch((err) => console.error(`ledger failed for exchange ${exchangeId}:`, err?.message ?? err))
     .finally(() => pending.delete(job));
   pending.add(job);
@@ -37,7 +37,7 @@ export async function ledgerIdle() {
   await Promise.all([...pending]);
 }
 
-async function extract(client: Anthropic, exchangeId: number, question: string, answer: string, sources: Source[]) {
+async function extract(ai: GoogleGenAI, exchangeId: number, question: string, answer: string, sources: Source[]) {
   // nothing worth a model call in "thanks!" / "you're welcome"
   if (answer.length < 200 && sources.length === 0) {
     saveLedger(exchangeId, question.slice(0, 80), []);
@@ -45,21 +45,17 @@ async function extract(client: Anthropic, exchangeId: number, question: string, 
   }
 
   const sourceList = sources.map((s) => `- ${s.title}: ${s.url}`).join("\n") || "none";
-  const res = await client.messages.parse({
+  const res = await ai.interactions.create({
     model: MODEL,
-    max_tokens: 4000,
-    system: LEDGER_SYSTEM,
-    output_config: { effort: "low", format: zodOutputFormat(Ledger) },
-    messages: [
-      {
-        role: "user",
-        content: `<question>\n${question}\n</question>\n\n<answer>\n${answer}\n</answer>\n\n<sources>\n${sourceList}\n</sources>`,
-      },
-    ],
+    system_instruction: LEDGER_SYSTEM,
+    input: `<question>\n${question}\n</question>\n\n<answer>\n${answer}\n</answer>\n\n<sources>\n${sourceList}\n</sources>`,
+    // the model must reply in this exact JSON shape
+    response_format: { type: "text", mime_type: "application/json", schema: LEDGER_SCHEMA },
+    store: false,
   });
 
-  const out = res.parsed_output;
-  if (!out) throw new Error(`no parsed output (stop_reason: ${res.stop_reason})`);
+  // still check it ourselves: a schema on the request is a promise, not a proof
+  const out = Ledger.parse(JSON.parse(res.output_text ?? ""));
   saveLedger(
     exchangeId,
     out.topic,

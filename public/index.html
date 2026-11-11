@@ -188,7 +188,9 @@ function addSources(el, sources) {
     if (!/^https?:\/\//.test(s.url)) continue;
     const a = document.createElement("a");
     a.href = s.url; a.target = "_blank"; a.rel = "noopener noreferrer";
-    a.textContent = new URL(s.url).hostname.replace(/^www\./, "");
+    // Google hands back redirect links, so the title (usually the site) reads better than the host
+    const host = new URL(s.url).hostname.replace(/^www\./, "");
+    a.textContent = host.includes("vertexaisearch") && s.title ? s.title : host;
     a.title = s.title;
     row.append(a);
   }
@@ -207,16 +209,27 @@ async function ask(text) {
   const bot = addBot();
   toBottom();
 
-  let md = "";
-  const cites = []; // urls in the order they were first cited
+  let answer = "";
+  const marks = []; // { at, n, url }: where each citation number goes in the text
+  const urls = []; // urls in the order they were first cited
+  // put the [1] markers in from the back so earlier positions stay valid
+  const withMarks = () => {
+    let md = answer;
+    for (const m of [...marks].sort((a, b) => b.at - a.at)) {
+      const at = Math.min(m.at, md.length);
+      md = md.slice(0, at) + ` [${m.n}](${m.url})` + md.slice(at);
+    }
+    return md;
+  };
   const handle = (e) => {
     if (e.type === "status") bot.status.textContent = e.text;
-    else if (e.type === "text") { md += e.text; bot.body.replaceChildren(render(md)); bot.status.textContent = ""; }
+    else if (e.type === "text") { answer += e.text; bot.body.replaceChildren(render(withMarks())); bot.status.textContent = ""; }
     else if (e.type === "cite" && /^https?:\/\//.test(e.source.url)) {
-      let n = cites.indexOf(e.source.url) + 1;
-      if (!n) n = cites.push(e.source.url);
-      md += ` [${n}](${e.source.url})`;
-      bot.body.replaceChildren(render(md));
+      let n = urls.indexOf(e.source.url) + 1;
+      if (!n) n = urls.push(e.source.url);
+      const at = e.at ?? answer.length;
+      if (!marks.some((m) => m.at === at && m.n === n)) marks.push({ at, n, url: e.source.url });
+      bot.body.replaceChildren(render(withMarks()));
     }
     else if (e.type === "sources") addSources(bot.el, e.sources);
     else if (e.type === "error") {

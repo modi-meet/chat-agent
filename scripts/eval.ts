@@ -1,6 +1,6 @@
 // Runs the three sample questions from the task against seeded memory and
 // prints what a judge would look at: the answer, how long the first word took,
-// and how many searches it made. Needs ANTHROPIC_API_KEY. Run `npm run seed` first.
+// and how many searches it made. Needs GEMINI_API_KEY. Run `npm run seed` first.
 
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
@@ -47,7 +47,7 @@ for (const c of CASES) {
       if (e.type === "text") {
         firstWord ||= Date.now() - started;
         answer += e.text;
-      } else if (e.type === "status" && e.text.startsWith("Searching the web")) searches++;
+      } else if (e.type === "status" && e.text.startsWith("Searching")) searches++;
       else if (e.type === "error") error = e.message;
     },
   });

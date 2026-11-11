@@ -7,10 +7,10 @@ How it works and why: [DESIGN.md](DESIGN.md).
 ## Run it
 ```bash
 npm install
-cp .env.example .env   # add ANTHROPIC_API_KEY
+cp .env.example .env   # add GEMINI_API_KEY
 npm run dev            # http://localhost:3000
 ```
-Needs Node 20 or newer. The only key is `ANTHROPIC_API_KEY`.
+Needs Node 20 or newer. The only key is `GEMINI_API_KEY` (free from Google AI Studio).
 
 ## Try the date questions without waiting a week
 ```bash

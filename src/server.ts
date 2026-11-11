@@ -78,5 +78,5 @@ async function readJson(req: http.IncomingMessage): Promise<Record<string, unkno
 
 server.listen(PORT, () => {
   console.log(`chat agent on http://localhost:${PORT}  (it's ${formatDayTime(now())})`);
-  if (!process.env.ANTHROPIC_API_KEY) console.warn("ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add it.");
+  if (!process.env.GEMINI_API_KEY) console.warn("GEMINI_API_KEY is not set. Copy .env.example to .env and add it.");
 });
