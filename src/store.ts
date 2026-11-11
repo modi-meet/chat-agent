@@ -25,7 +25,9 @@ export type Claim = {
   sourceUrl: string | null;
 };
 
-const file = process.env.DB_PATH ?? path.join(process.cwd(), "data", "memory.db");
+// on vercel only /tmp is writable, and it doesn't survive a cold start
+const file =
+  process.env.DB_PATH ?? (process.env.VERCEL ? "/tmp/memory.db" : path.join(process.cwd(), "data", "memory.db"));
 if (file !== ":memory:") mkdirSync(path.dirname(file), { recursive: true });
 
 const db = new Database(file);
@@ -157,6 +159,10 @@ export function claimsFor(exchangeIds: number[]): Map<number, Claim[]> {
     out.set(r.exchange_id, list);
   }
   return out;
+}
+
+export function isEmpty(): boolean {
+  return db.prepare("SELECT 1 FROM exchanges LIMIT 1").get() === undefined;
 }
 
 // used by the seed script so re-seeding never touches real chats
