@@ -5,57 +5,8 @@ A chat agent with one tool, web search. It remembers what you asked and when, so
 How it works and why: [DESIGN.md](DESIGN.md).
 
 ## Architecture
-```mermaid
-flowchart TB
-  user(["User"])
-  page["<b>Chat page</b><br/>browser"]
+<img src="docs/architecture.svg" alt="Architecture: chat page, server (chat API, date resolver, memory recall, agent, claim ledger), DB and model API with web search" width="100%">
 
-  subgraph server["Server"]
-    direction TB
-    api["<b>Chat API</b><br/>takes the message, streams the reply"]
-    dates["<b>1. Date resolver</b><br/>'last Tuesday' becomes a real date"]
-    recall["<b>2. Memory recall</b><br/>by date, by topic, recent timeline"]
-    agent["<b>3. Agent</b><br/>one streamed model call"]
-    ledger["<b>4. Claim ledger</b><br/>runs after the reply is sent"]
-    api --> dates --> recall --> agent
-    agent -. "after reply" .-> ledger
-  end
-
-  subgraph db["DB"]
-    direction TB
-    chats[("<b>Chats</b><br/>question, answer, timestamp")]
-    claims[("<b>Claims</b><br/>entity, claim, source")]
-    index[("<b>Search index</b><br/>full-text over chats")]
-  end
-
-  subgraph model["Model API"]
-    direction TB
-    llm["<b>Chat model</b>"]
-    search["<b>Web search</b><br/>the only tool"]
-    small["<b>Small model</b><br/>claim extraction"]
-    llm <--> search
-  end
-
-  user --> page
-  page -- "message" --> api
-  agent -- "answer + sources, streamed" --> page
-
-  recall -- "read" --> db
-  agent -- "save chat" --> chats
-  ledger -- "save claims" --> claims
-
-  agent <-- "question + memory" --> llm
-  ledger --> small
-
-  classDef srv fill:#e8f1ee,stroke:#2f5d50,color:#12332b,stroke-width:1.5px
-  classDef data fill:#fdf3dc,stroke:#a8741a,color:#4a3208,stroke-width:1.5px
-  classDef ext fill:#ecebfb,stroke:#5a52b5,color:#26215c,stroke-width:1.5px
-  classDef edge fill:#f4f2ee,stroke:#77736c,color:#1d1c1a,stroke-width:1.5px
-  class api,dates,recall,agent,ledger srv
-  class chats,claims,index data
-  class llm,search,small ext
-  class user,page edge
-```
 Memory is looked up before the model runs and handed over as context, so web search stays the only tool. The full reasoning is in [DESIGN.md](DESIGN.md).
 
 ## Run it
