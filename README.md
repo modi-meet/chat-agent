@@ -10,7 +10,7 @@ npm install
 cp .env.example .env   # add GEMINI_API_KEY
 npm run dev            # http://localhost:3000
 ```
-Needs Node 20 or newer. The only key is `GEMINI_API_KEY` (free from Google AI Studio).
+Needs Node 20 or newer. The only key is `GEMINI_API_KEY` (free from Google AI Studio). The default chat model, `gemini-2.5-flash`, is the one with free Google Search; with billing on, set `CHAT_MODEL=gemini-3.8-flash`.
 
 ## Try the date questions without waiting a week
 ```bash

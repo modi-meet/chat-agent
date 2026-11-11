@@ -184,6 +184,7 @@ function addSources(el, sources) {
   if (!sources || !sources.length) return;
   const row = document.createElement("div");
   row.className = "sources";
+  const seen = new Set();
   for (const s of sources) {
     if (!/^https?:\/\//.test(s.url)) continue;
     const a = document.createElement("a");
@@ -191,6 +192,8 @@ function addSources(el, sources) {
     // Google hands back redirect links, so the title (usually the site) reads better than the host
     const host = new URL(s.url).hostname.replace(/^www\./, "");
     a.textContent = host.includes("vertexaisearch") && s.title ? s.title : host;
+    if (seen.has(a.textContent)) continue; // one chip per site
+    seen.add(a.textContent);
     a.title = s.title;
     row.append(a);
   }
@@ -215,7 +218,7 @@ async function ask(text) {
   // put the [1] markers in from the back so earlier positions stay valid
   const withMarks = () => {
     let md = answer;
-    for (const m of [...marks].sort((a, b) => b.at - a.at)) {
+    for (const m of [...marks].sort((a, b) => b.at - a.at || b.n - a.n)) {
       const at = Math.min(m.at, md.length);
       md = md.slice(0, at) + ` [${m.n}](${m.url})` + md.slice(at);
     }
@@ -224,6 +227,7 @@ async function ask(text) {
   const handle = (e) => {
     if (e.type === "status") bot.status.textContent = e.text;
     else if (e.type === "text") { answer += e.text; bot.body.replaceChildren(render(withMarks())); bot.status.textContent = ""; }
+    else if (e.type === "reset") { answer = ""; marks.length = 0; bot.body.replaceChildren(); }
     else if (e.type === "cite" && /^https?:\/\//.test(e.source.url)) {
       let n = urls.indexOf(e.source.url) + 1;
       if (!n) n = urls.push(e.source.url);

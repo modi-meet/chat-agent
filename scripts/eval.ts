@@ -6,6 +6,7 @@ import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { runTurn } from "../src/agent.ts";
 import { ledgerIdle } from "../src/ledger.ts";
+import { removeSession } from "../src/store.ts";
 
 const CASES = [
   {
@@ -33,6 +34,7 @@ const CASES = [
 ];
 
 let failed = 0;
+const sessions: string[] = [];
 for (const c of CASES) {
   const started = Date.now();
   let firstWord = 0;
@@ -40,14 +42,17 @@ for (const c of CASES) {
   let answer = "";
   let error = "";
 
+  const sessionId = randomUUID(); // fresh thread each time, so only memory can help
+  sessions.push(sessionId);
   await runTurn({
-    sessionId: randomUUID(), // fresh thread each time, so only memory can help
+    sessionId,
     message: c.ask,
     emit: (e) => {
       if (e.type === "text") {
         firstWord ||= Date.now() - started;
         answer += e.text;
-      } else if (e.type === "status" && e.text.startsWith("Searching")) searches++;
+      } else if (e.type === "reset") answer = "";
+      else if (e.type === "status" && e.text.startsWith("Searching")) searches++;
       else if (e.type === "error") error = e.message;
     },
   });
@@ -64,5 +69,6 @@ for (const c of CASES) {
 }
 
 await ledgerIdle();
+for (const id of sessions) removeSession(id); // eval chats must not become memories
 console.log(`\n${CASES.length - failed}/${CASES.length} passed`);
 process.exit(failed ? 1 : 0);
