@@ -1,0 +1,39 @@
+# Chat agent with web search and a memory for dates
+
+A chat agent with one tool, web search. It remembers what you asked and when, so it can answer things like "last Tuesday I asked about Postgres hosting, has pricing changed?"
+
+How it works and why: [DESIGN.md](DESIGN.md).
+
+## Run it
+```bash
+npm install
+cp .env.example .env   # add ANTHROPIC_API_KEY
+npm run dev            # http://localhost:3000
+```
+Needs Node 20 or newer. The only key is `ANTHROPIC_API_KEY`.
+
+## Try the date questions without waiting a week
+```bash
+npm run seed
+```
+This adds three sample past chats (a CRM shortlist on Monday, Postgres hosting on Tuesday, a Node.js question on 3 November). It's demo data and only replaces its own rows.
+
+You can also move the clock: set `FAKE_NOW=2026-11-20T10:00:00` in `.env` and the agent believes it's that day.
+
+## Check it
+```bash
+npm test        # date and memory logic, no key needed
+npm run eval    # the task's sample questions against seeded memory, needs the key
+```
+
+## Where things are
+| File | What it does |
+|---|---|
+| `src/agent.ts` | one turn: recall, model call, stream, save |
+| `src/recall.ts` | builds the memory block for each question |
+| `src/dates.ts` | "last Tuesday" to real dates |
+| `src/ledger.ts` | writes down claims after each answer |
+| `src/store.ts` | SQLite: chats and claims |
+| `src/prompt.ts` | the two prompts |
+| `src/server.ts` | HTTP and streaming |
+| `public/index.html` | the chat page |

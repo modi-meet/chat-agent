@@ -1,0 +1,29 @@
+{
+  "name": "minimi-chat-agent",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "seed": "tsx scripts/seed.ts",
+    "eval": "tsx scripts/eval.ts",
+    "test": "tsx --test src/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "better-sqlite3": "^13.0.3",
+    "chrono-node": "^2.10.3",
+    "dotenv": "^18.0.10",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
