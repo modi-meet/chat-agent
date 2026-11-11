@@ -24,7 +24,7 @@ Next week's "has HubSpot's price changed since Monday?" gets Monday's claims han
 - **Runs on a free key.** Chat defaults to `gemini-2.5-flash` because it is the only model where Google Search works without billing. One env var (`CHAT_MODEL=gemini-3.8-flash`) moves it to the better model on a paid key. 2.5 sometimes drafts an answer, searches, then starts over in the same stream, so the agent drops the pre-search draft.
 - **Fast by default.** A Flash model for chat and Flash-Lite for the ledger, streaming, low thinking level, no search for small talk or pure memory questions, and only the last 10 turns are replayed (older ones come back through recall).
 - **The system prompt never changes.** Time and memory travel with the user message, so the prompt stays stable and easy to reason about.
-- **Boring storage.** One SQLite file, two tables. `npm install` is the whole setup.
+- **Boring storage.** One SQLite file, two tables. `npm install` is the whole setup. The cost: a serverless host has no lasting disk, so the Vercel demo reseeds its memory on cold start. A hosted SQLite (Turso) fixes that for one more key.
 
 ## Considered and rejected
 - **Memory as a second tool.** Breaks the one-tool rule and adds a model round trip to every memory question.

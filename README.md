@@ -20,6 +20,9 @@ This adds three sample past chats (a CRM shortlist on Monday, Postgres hosting o
 
 You can also move the clock: set `FAKE_NOW=2026-11-20T10:00:00` in `.env` and the agent believes it's that day.
 
+## Hosted demo
+The repo deploys to Vercel as is; set `GEMINI_API_KEY` in the project's environment variables. Vercel has no disk that lasts, so the hosted copy keeps memory in `/tmp`: it starts from the sample chats on every cold start, forgets real chats when the instance recycles, and runs in UTC. Run it locally for memory that sticks.
+
 ## Check it
 ```bash
 npm test        # date and memory logic, no key needed
@@ -35,5 +38,7 @@ npm run eval    # the task's sample questions against seeded memory, needs the k
 | `src/ledger.ts` | writes down claims after each answer |
 | `src/store.ts` | SQLite: chats and claims |
 | `src/prompt.ts` | the two prompts |
-| `src/server.ts` | HTTP and streaming |
+| `src/routes.ts` | the three HTTP routes and streaming |
+| `src/server.ts` | starts the server |
+| `src/seed.ts` | the sample past chats |
 | `public/index.html` | the chat page |
