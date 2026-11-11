@@ -13,6 +13,8 @@ message
   -> store.ts    save the question, answer and sources with a timestamp
   -> ledger.ts   after the reply is sent, a small model writes down the claims (entity, fact, source)
 ```
+The same flow as a picture: [architecture diagram](README.md#architecture).
+
 Next week's "has HubSpot's price changed since Monday?" gets Monday's claims handed to it, searches each one, and answers then versus now.
 
 ## Why it's built this way
