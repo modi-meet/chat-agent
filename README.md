@@ -5,7 +5,7 @@ A chat agent with one tool, web search. It remembers what you asked and when, so
 How it works and why: [DESIGN.md](DESIGN.md).
 
 ## Architecture
-<img src="docs/architecture.svg" alt="Architecture: chat page, server (chat API, date resolver, memory recall, agent, claim ledger), DB and model API with web search" width="100%">
+<img src="docs/architecture.svg" alt="Architecture: you and the chat page, the server steps (chat API, date resolver, memory recall, agent, claim ledger), the DB, and the model API with web search" width="100%">
 
 Memory is looked up before the model runs and handed over as context, so web search stays the only tool. The full reasoning is in [DESIGN.md](DESIGN.md).
 
