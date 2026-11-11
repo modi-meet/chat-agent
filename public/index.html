@@ -224,6 +224,12 @@ async function ask(text) {
     }
     return md;
   };
+  const unlock = () => {
+    bot.status.classList.remove("live");
+    bot.status.textContent = "";
+    send.disabled = false;
+    input.focus();
+  };
   const handle = (e) => {
     if (e.type === "status") bot.status.textContent = e.text;
     else if (e.type === "text") { answer += e.text; bot.body.replaceChildren(render(withMarks())); bot.status.textContent = ""; }
@@ -236,6 +242,7 @@ async function ask(text) {
       bot.body.replaceChildren(render(withMarks()));
     }
     else if (e.type === "sources") addSources(bot.el, e.sources);
+    else if (e.type === "done") unlock(); // the answer is complete, even if the server is still tidying up
     else if (e.type === "error") {
       const p = document.createElement("p"); p.className = "error"; p.textContent = e.message;
       bot.body.append(p);
@@ -267,10 +274,7 @@ async function ask(text) {
   } catch {
     handle({ type: "error", message: "Lost the connection. Try again." });
   }
-  bot.status.classList.remove("live");
-  bot.status.textContent = "";
-  send.disabled = false;
-  input.focus();
+  unlock();
 }
 
 async function load() {
